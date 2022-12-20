@@ -1,13 +1,33 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import struct
 from sklearn.neural_network import MLPClassifier
-from astropy.io import fits
 from tkinter import *
+
+# Function to read a fits file into a numpy array
+def read_fits(fits_file):
+  # Open the fits file
+  with open(fits_file, 'rb') as f:
+    # Read the header
+    header = f.read(2880)
+    # Read the data
+    data = f.read()
+
+  # Extract the number of rows and columns from the header
+  rows, cols = struct.unpack('>ii', header[9:17])
+
+  # Extract the data from the fits file
+  data = np.array(struct.unpack('f' * rows * cols, data))
+
+  # Reshape the data into a 2D array
+  data = data.reshape((rows, cols))
+
+  return data
 
 # Function to classify supernovae Type Ia using neural networks
 def classify_snia(fits_data):
   # Load the fits data into a numpy array
-  data = fits.getdata(fits_data)
+  data = read_fits(fits_data)
 
   # Extract the features and labels from the data
   X = data[:, :-1]
